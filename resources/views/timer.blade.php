@@ -19,7 +19,7 @@
             {{-- Timer Header --}}
             <div class="timer-header">
                 <h1>🍳 FitFlow Timer</h1>
-                <p>Timer untuk memasak, workout, dan aktivitas lainnya</p>
+                <p>Timer untuk memasak</p>
             </div>
 
             {{-- Timer Display --}}

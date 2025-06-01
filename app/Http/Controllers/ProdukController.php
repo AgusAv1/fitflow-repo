@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
-
 class ProdukController extends Controller
 {
     /**
@@ -47,27 +46,28 @@ class ProdukController extends Controller
     }
 
    public function loginProcess(Request $request)
-    {
-        $request->validate([
-            'username' => 'required',
-            'password' => 'required'
-        ]);
+{
+    $request->validate([
+        'username' => 'required',
+        'password' => 'required'
+    ]);
 
-        $credentials = [
-            'name' => $request->username,
-            'password' => $request->password
-        ];
+    $credentials = [
+        'name' => $request->username,
+        'password' => $request->password
+    ];
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route('dashboard');
-        }
-
-        return back()->withErrors([
-            'username' => 'Username atau password salah.',
-        ])->onlyInput('username');
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->route('dashboard');
     }
 
+    return back()->withErrors([
+        'username' => 'Username atau password salah.',
+    ])->onlyInput('username');
+}
+
+    // Method untuk mendapatkan data resep
     private function getRecipeData()
     {
         return [
@@ -138,18 +138,14 @@ class ProdukController extends Controller
     public function dashboard() {
         // Ambil data resep
         $allRecipes = $this->getRecipeData();
-
+        
         // Ambil 3 resep random untuk ditampilkan di dashboard
         $randomRecipes = collect($allRecipes)->random(3)->values();
-
+        
         return view('dashboard', compact('randomRecipes'));
     }
 
-        public function schedule() {
-            return view('schedule');
-        }
-
-        public function recipes() {
+    public function recipes() {
         // Ambil semua data resep untuk halaman recipes
         $recipes = $this->getRecipeData();
         return view('recipes', compact('recipes'));
@@ -267,64 +263,34 @@ class ProdukController extends Controller
     $recipe = $recipeData[$id];
     $ingredients = $ingredientsData[$id] ?? [];
     $instructions = $instructionsData[$id] ?? [];
-
+    
     // Return view ke file recipe-detail.php
     return view('recipe-detail', compact('recipe', 'ingredients', 'instructions'));
+}
+
+    public function workout() {
+        return view('workout');
     }
 
-        public function workout() {
-            $categories = ['Back', 'Arms', 'Legs', 'Core', 'Cardio', 'Full Body'];
-            $exercises = [
-                'Back' => [
-                    ['name' => 'Superman', 'description' => 'Berbaring tengkurap, angkat tangan dan kaki secara bersamaan.', 'duration' => '3 set x 15 detik'],
-                    ['name' => 'Bent Over Rows', 'description' => 'Menggunakan dumbbell atau berat badan.', 'duration' => '3 set x 12 repetisi'],
-                ],
-                'Arms' => [
-                    ['name' => 'Push Up', 'description' => 'Latihan kekuatan lengan dan dada.', 'duration' => '3 set x 15 repetisi'],
-                    ['name' => 'Tricep Dips', 'description' => 'Menggunakan kursi atau bangku.', 'duration' => '3 set x 12 repetisi'],
-                ],
-                'Legs' => [
-                    ['name' => 'Squats', 'description' => 'Latihan kekuatan kaki dan bokong.', 'duration' => '3 set x 20 repetisi'],
-                    ['name' => 'Lunges', 'description' => 'Melatih keseimbangan dan kekuatan kaki.', 'duration' => '3 set x 12 repetisi per kaki'],
-                ],
-                'Core' => [
-                    ['name' => 'Plank', 'description' => 'Menahan posisi tubuh lurus.', 'duration' => '3 set x 30 detik'],
-                    ['name' => 'Russian Twists', 'description' => 'Latihan otot perut samping.', 'duration' => '3 set x 20 repetisi'],
-                ],
-                'Cardio' => [
-                    ['name' => 'Jumping Jacks', 'description' => 'Latihan kardio ringan.', 'duration' => '3 set x 50 repetisi'],
-                    ['name' => 'Burpees', 'description' => 'Latihan kardio intens.', 'duration' => '3 set x 15 repetisi'],
-                ],
-                'Full Body' => [
-                    ['name' => 'Mountain Climbers', 'description' => 'Latihan seluruh tubuh.', 'duration' => '3 set x 30 detik'],
-                    ['name' => 'Burpees', 'description' => 'Latihan kardio dan kekuatan.', 'duration' => '3 set x 15 repetisi'],
-                ],
-            ];
-            return view('workout', compact('categories', 'exercises'));
-        }
+    public function timer() {
+        return view('timer');
+    }
 
-        public function todolist() {
-            return view('todolist');
-        }
+    // Tambahan method yang diperlukan dari dashboard view
+    public function todolist() {
+        return view('todolist');
+    }
 
-        public function timer() {
-            return view('timer');
-        }
+    public function schedule() {
+        return view('schedule');
+    }
 
-        public function progress() {
-            return view('progress');
-        }
-
-        public function profile() {
-            return view('profile');
-        }
-
-
-
-
-        public function logout() {
-            Auth::logout();
-            return redirect()->route('home');
-        }
-
+    public function logout(Request $request) {
+        Auth::logout();
+        
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect()->route('home')->with('success', 'Berhasil logout!');
+    }
 }

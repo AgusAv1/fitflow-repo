@@ -1,14 +1,10 @@
 // JavaScript untuk halaman Workout
-// Mengelola daftar workout hari ini dan jadwal workout
+// Mengelola daftar workout hari ini 
 
 document.addEventListener('DOMContentLoaded', () => {
     const todayWorkoutList = document.getElementById('todayWorkoutList');
     const doNowButtons = document.querySelectorAll('.do-now-btn');
-    const scheduleButtons = document.querySelectorAll('.schedule-btn');
-    const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
-    const selectedExerciseName = document.getElementById('selectedExerciseName');
-    const scheduleForm = document.getElementById('scheduleForm');
-    const scheduleDateInput = document.getElementById('scheduleDate');
+    const categoryDoNowButtons = document.querySelectorAll('.category-do-now-btn');
 
     let todayWorkouts = [];
 
@@ -46,39 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Event untuk tombol "Jadwalkan"
-    scheduleButtons.forEach(btn => {
+    // Event untuk tombol "Lakukan Semua" kategori
+    categoryDoNowButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            const exerciseName = btn.getAttribute('data-name');
-            selectedExerciseName.textContent = `Jadwalkan: ${exerciseName}`;
-            scheduleForm.setAttribute('data-exercise', exerciseName);
-            scheduleDateInput.value = '';
-            scheduleModal.show();
+            const category = btn.getAttribute('data-category');
+            // Cari semua exercise dalam kategori tersebut
+            const exercises = document.querySelectorAll(`#collapse${Array.from(categoryDoNowButtons).indexOf(btn)} .do-now-btn`);
+            exercises.forEach(exerciseBtn => {
+                const exerciseName = exerciseBtn.getAttribute('data-name');
+                if (!todayWorkouts.includes(exerciseName)) {
+                    todayWorkouts.push(exerciseName);
+                }
+            });
+            renderTodayWorkouts();
         });
-    });
-
-    // Event submit form jadwal
-    scheduleForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const exerciseName = scheduleForm.getAttribute('data-exercise');
-        const date = scheduleDateInput.value;
-        if (!date) {
-            alert('Silakan pilih tanggal.');
-            return;
-        }
-        // Simpan jadwal ke localStorage (atau bisa ke backend)
-        let schedules = JSON.parse(localStorage.getItem('workoutSchedules') || '{}');
-        if (!schedules[date]) {
-            schedules[date] = [];
-        }
-        if (!schedules[date].includes(exerciseName)) {
-            schedules[date].push(exerciseName);
-            localStorage.setItem('workoutSchedules', JSON.stringify(schedules));
-            alert(`Workout "${exerciseName}" dijadwalkan pada ${date}`);
-        } else {
-            alert('Workout sudah dijadwalkan pada tanggal tersebut.');
-        }
-        scheduleModal.hide();
     });
 
     // Render awal

@@ -347,7 +347,7 @@
                         <!-- SLOT UNTUK LOGO FOOTER - Ganti div ini dengan <img> tag -->
                         <img src="{{ asset('images/logo fitflow.png') }}" alt="Logo Footer" height="60">
                         <p class="footer-description">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem dolor sit amet,
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem dolor sit amet, 
                             consectetur adipiscing elit.
                         </p>
                         <!-- Social Media Icons -->

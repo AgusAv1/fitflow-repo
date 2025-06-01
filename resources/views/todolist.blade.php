@@ -1,635 +1,724 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegant To-Do List</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-@section('title', 'To-Do List - FitFlow')
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #70A604 0%, #82c341 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-{{-- Link ke file CSS terpisah --}}
-<link rel="stylesheet" href="{{ asset('css/todolist.css') }}">
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease-out;
+        }
 
-@section('content')
-<div class="container">
-    <!-- Header -->
-    <div class="todolist-header">
-        <div class="header-content">
-            <div class="header-left">
-                <h1>📋 My To-Do List</h1>
-                <p>Kelola aktivitas harian Anda untuk hidup yang lebih sehat dan produktif</p>
+        /* Header with Hero Style */
+        .header {
+            background: linear-gradient(135deg, #DAFACC 0%, #a8edea 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(218, 250, 204, 0.4);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 120%;
+            height: 200%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+            transform: rotate(25deg);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-mascot {
+            margin-bottom: 20px;
+        }
+
+        .mascot-icon {
+            font-size: 3.5rem;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 90px;
+            height: 90px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(255,255,255,0.4);
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            animation: slideInDown 1s ease-out;
+        }
+
+        .header p {
+            color: #4a5568;
+            font-size: 1.2rem;
+            font-weight: 300;
+            animation: slideInUp 1s ease-out 0.2s both;
+        }
+
+        /* Floating Icons */
+        .floating-icons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.4;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .icon-1 { top: 15%; left: 10%; animation-delay: 0s; }
+        .icon-2 { top: 25%; right: 15%; animation-delay: 2s; }
+        .icon-3 { bottom: 30%; left: 8%; animation-delay: 4s; }
+        .icon-4 { bottom: 20%; right: 12%; animation-delay: 1s; }
+
+        /* Add To-Do Section */
+        .add-task-section {
+            background: linear-gradient(135deg, #FBE3D4 0%, #ffd3a5 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 40px rgba(251, 227, 212, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .add-task-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .add-task-section:hover::before {
+            left: 100%;
+        }
+
+        .add-task-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1rem;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            padding: 18px 24px;
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: all 0.4s ease;
+            background: rgba(255, 255, 255, 0.8);
+            resize: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #70A604;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(112, 166, 4, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .add-btn {
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #70A604 0%, #82c341 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 25px rgba(112, 166, 4, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .add-btn:hover::before {
+            left: 100%;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(112, 166, 4, 0.4);
+        }
+
+        /* To-Do Lists Section */
+        .tasks-section {
+            background: linear-gradient(135deg, #DAFACC 0%, #a8edea 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 40px rgba(218, 250, 204, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .tasks-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .tasks-section:hover::before {
+            left: 100%;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.4);
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            color: #2d3748;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .task-counter {
+            background: linear-gradient(135deg, #70A604 0%, #82c341 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(112, 166, 4, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* To-Do List */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .task-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .task-item:hover::before {
+            left: 100%;
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-color: rgba(112, 166, 4, 0.3);
+        }
+
+        .task-item.completed {
+            opacity: 0.75;
+            background: rgba(112, 166, 4, 0.1);
+            border-color: rgba(112, 166, 4, 0.2);
+        }
+
+        .task-item.completed .task-content h3 {
+            text-decoration: line-through;
+            color: #718096;
+        }
+
+        .task-item.completed .task-content p {
+            color: #a0aec0;
+        }
+
+        /* Custom Checkbox */
+        .task-checkbox {
+            position: relative;
+            width: 28px;
+            height: 28px;
+            margin-top: 2px;
+        }
+
+        .task-checkbox input {
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 28px;
+            height: 28px;
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.4s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .task-checkbox input:checked + .checkmark {
+            background: linear-gradient(135deg, #70A604 0%, #82c341 100%);
+            border-color: transparent;
+            transform: scale(1.1);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .task-checkbox input:checked + .checkmark:after {
+            display: block;
+            left: 8px;
+            top: 4px;
+            width: 7px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+
+        /* To-Do Content */
+        .task-content {
+            flex: 1;
+        }
+
+        .task-content h3 {
+            font-size: 1.2rem;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .task-content p {
+            color: #4a5568;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Delete Button */
+        .delete-btn {
+            background: linear-gradient(135deg, #FBE3D4 0%, #ffd3a5 100%);
+            border: 2px solid rgba(255,255,255,0.4);
+            color: #e53e3e;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+            transition: all 0.4s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .delete-btn:hover {
+            color: #c53030;
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #4a5568;
+        }
+
+        .empty-state .emoji {
+            font-size: 5rem;
+            margin-bottom: 25px;
+            opacity: 0.6;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .empty-state h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 40px 25px;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .header p {
+                font-size: 1.1rem;
+            }
+
+            .mascot-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 2.8rem;
+            }
+
+            .add-task-section,
+            .tasks-section {
+                padding: 25px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .task-item {
+                padding: 20px;
+            }
+
+            .floating-icon {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.9rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .mascot-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2.4rem;
+            }
+
+            .task-item {
+                padding: 15px;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="floating-icons">
+                <div class="floating-icon icon-1">📋</div>
+                <div class="floating-icon icon-2">✅</div>
+                <div class="floating-icon icon-3">📝</div>
+                <div class="floating-icon icon-4">📄</div>
             </div>
-            <div class="header-actions">
-                <button class="btn btn-primary add-task-btn" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                    <i class="fas fa-plus"></i> Tambah Task
+            <div class="header-content">
+                <div class="header-mascot">
+                    <div class="mascot-icon">📄</div>
+                </div>
+                <h1>My To-Do Lists</h1>
+                <p>Stay organized and productive with your elegant to-do list manager</p>
+            </div>
+        </div>
+
+        <!-- Add To-Do Section -->
+        <div class="add-task-section">
+            <form class="add-task-form" id="taskForm">
+                <div class="input-group">
+                    <label for="taskTitle">To-Do Title</label>
+                    <input type="text" id="taskTitle" placeholder="Enter your to-do item..." required>
+                </div>
+                <div class="input-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" rows="3" placeholder="Add a description (optional)..."></textarea>
+                </div>
+                <button type="submit" class="add-btn">Add To-Do</button>
+            </form>
+        </div>
+
+        <!-- To-Do Lists Section -->
+        <div class="tasks-section">
+            <div class="section-header">
+                <h2>Your To-Do Lists</h2>
+                <div class="task-counter">
+                    <span id="taskCount">0</span> to-do items
+                </div>
+            </div>
+
+            <div class="task-list" id="taskList">
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <div class="emoji">📄</div>
+                    <h3>No to-do items yet</h3>
+                    <p>Add your first to-do item above to get started</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let taskIdCounter = 1;
+
+        // DOM Elements
+        const taskForm = document.getElementById('taskForm');
+        const taskTitleInput = document.getElementById('taskTitle');
+        const taskDescriptionInput = document.getElementById('taskDescription');
+        const taskList = document.getElementById('taskList');
+        const taskCounter = document.getElementById('taskCount');
+        const emptyState = document.getElementById('emptyState');
+
+        // Add To-Do
+        taskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = taskTitleInput.value.trim();
+            const description = taskDescriptionInput.value.trim();
+            
+            if (title) {
+                const newTask = {
+                    id: taskIdCounter++,
+                    title: title,
+                    description: description,
+                    completed: false
+                };
+                
+                tasks.push(newTask);
+                renderTasks();
+                
+                // Reset form
+                taskTitleInput.value = '';
+                taskDescriptionInput.value = '';
+                taskTitleInput.focus();
+            }
+        });
+
+        // Render To-Do Lists
+        function renderTasks() {
+            taskList.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                taskList.appendChild(emptyState);
+            } else {
+                tasks.forEach(task => {
+                    const taskItem = createTaskElement(task);
+                    taskList.appendChild(taskItem);
+                });
+            }
+            
+            updateTaskCounter();
+        }
+
+        // Create To-Do Element
+        function createTaskElement(task) {
+            const taskItem = document.createElement('div');
+            taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+            
+            taskItem.innerHTML = `
+                <div class="task-checkbox">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id})">
+                    <span class="checkmark"></span>
+                </div>
+                <div class="task-content">
+                    <h3>${task.title}</h3>
+                    ${task.description ? `<p>${task.description}</p>` : ''}
+                </div>
+                <button class="delete-btn" onclick="deleteTask(${task.id})">
+                    ×
                 </button>
-                <div class="progress-summary">
-                    <div class="progress-circle">
-                        <svg width="60" height="60">
-                            <circle cx="30" cy="30" r="25" stroke="#e9ecef" stroke-width="4" fill="none"/>
-                            <circle cx="30" cy="30" r="25" stroke="#28a745" stroke-width="4" fill="none"
-                                    stroke-dasharray="157" stroke-dashoffset="78.5" class="progress-ring"/>
-                        </svg>
-                        <span class="progress-text">65%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Tabs -->
-    <div class="filter-tabs">
-        <button class="filter-btn active" data-filter="all">Semua <span class="count">24</span></button>
-        <button class="filter-btn" data-filter="workout">🏃 Olahraga <span class="count">6</span></button>
-        <button class="filter-btn" data-filter="nutrition">🥗 Nutrisi <span class="count">8</span></button>
-        <button class="filter-btn" data-filter="wellness">🧘 Wellness <span class="count">5</span></button>
-        <button class="filter-btn" data-filter="habit">💧 Kebiasaan <span class="count">5</span></button>
-        <button class="filter-btn" data-filter="completed">✅ Selesai <span class="count">12</span></button>
-    </div>
-
-    <!-- Today's Priority Tasks -->
-    <div class="priority-section">
-        <div class="section-header">
-            <h3>⭐ Prioritas Hari Ini</h3>
-            <span class="section-subtitle">Task yang harus diselesaikan hari ini</span>
-        </div>
-        <div class="priority-grid">
-            <div class="todo-item priority-high" data-category="workout">
-                <div class="priority-badge">HIGH</div>
-                <div class="todo-content">
-                    <h4>🏃‍♂️ Morning Cardio Run</h4>
-                    <p>Lari pagi 30 menit di taman</p>
-                    <div class="task-meta">
-                        <span class="time">07:00 - 07:30</span>
-                        <span class="category">Olahraga</span>
-                    </div>
-                </div>
-                <div class="todo-checkbox">
-                    <input type="checkbox" id="priority1">
-                    <label for="priority1"></label>
-                </div>
-            </div>
-            <div class="todo-item priority-medium completed" data-category="nutrition">
-                <div class="priority-badge medium">MED</div>
-                <div class="todo-content">
-                    <h4>🥗 Healthy Breakfast</h4>
-                    <p>Oatmeal dengan buah-buahan segar</p>
-                    <div class="task-meta">
-                        <span class="time">08:00</span>
-                        <span class="category">Nutrisi</span>
-                    </div>
-                </div>
-                <div class="todo-checkbox">
-                    <input type="checkbox" id="priority2" checked>
-                    <label for="priority2"></label>
-                </div>
-            </div>
-            <div class="todo-item priority-high" data-category="habit">
-                <div class="priority-badge">HIGH</div>
-                <div class="todo-content">
-                    <h4>💧 Hydration Goal</h4>
-                    <p>Minum 8 gelas air putih hari ini</p>
-                    <div class="task-meta">
-                        <span class="progress-text">6/8 gelas</span>
-                        <span class="category">Kebiasaan</span>
-                    </div>
-                </div>
-                <div class="todo-checkbox">
-                    <input type="checkbox" id="priority3">
-                    <label for="priority3"></label>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Todo Sections -->
-    <div class="todo-sections">
-        <!-- Workout Section -->
-        <div class="todo-section" data-category="workout">
-            <div class="section-header">
-                <h3>🏋️‍♂️ Olahraga & Aktivitas Fisik</h3>
-                <span class="section-progress">4/6 completed</span>
-            </div>
-            <div class="todo-list">
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🏃‍♀️ Morning Jog</h4>
-                        <p>Jogging 5km di sekitar kompleks</p>
-                        <div class="task-meta">
-                            <span class="duration">45 menit</span>
-                            <span class="calories">~300 kcal</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="workout1" checked>
-                        <label for="workout1"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>💪 Strength Training</h4>
-                        <p>Upper body workout - Push, Pull, Legs</p>
-                        <div class="task-meta">
-                            <span class="time">16:00</span>
-                            <span class="duration">60 menit</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="workout2">
-                        <label for="workout2"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🧘‍♀️ Yoga Session</h4>
-                        <p>Morning yoga flow untuk fleksibilitas</p>
-                        <div class="task-meta">
-                            <span class="duration">30 menit</span>
-                            <span class="instructor">dengan Sarah Wilson</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="workout3" checked>
-                        <label for="workout3"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>🚶‍♂️ Evening Walk</h4>
-                        <p>Jalan santai setelah makan malam</p>
-                        <div class="task-meta">
-                            <span class="time">19:30</span>
-                            <span class="steps">3000 langkah</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="workout4">
-                        <label for="workout4"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🏊‍♂️ Swimming</h4>
-                        <p>Berenang 20 lap di kolam renang</p>
-                        <div class="task-meta">
-                            <span class="duration">45 menit</span>
-                            <span class="calories">~400 kcal</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="workout5" checked>
-                        <label for="workout5"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>🚴‍♀️ Cycling</h4>
-                        <p>Bersepeda ke kantor (round trip)</p>
-                        <div class="task-meta">
-                            <span class="distance">15 km</span>
-                            <span class="eco">Ramah lingkungan</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="workout6">
-                        <label for="workout6"></label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nutrition Section -->
-        <div class="todo-section" data-category="nutrition">
-            <div class="section-header">
-                <h3>🍎 Nutrisi & Makanan Sehat</h3>
-                <span class="section-progress">5/8 completed</span>
-            </div>
-            <div class="todo-list">
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🥣 Healthy Breakfast</h4>
-                        <p>Oatmeal dengan blueberry dan madu</p>
-                        <div class="task-meta">
-                            <span class="calories">350 kcal</span>
-                            <span class="protein">12g protein</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition1" checked>
-                        <label for="nutrition1"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>🥗 Power Lunch Salad</h4>
-                        <p>Caesar salad dengan grilled chicken</p>
-                        <div class="task-meta">
-                            <span class="time">12:30</span>
-                            <span class="calories">480 kcal</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition2">
-                        <label for="nutrition2"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🍌 Mid-Morning Snack</h4>
-                        <p>Pisang dengan selai kacang almond</p>
-                        <div class="task-meta">
-                            <span class="calories">200 kcal</span>
-                            <span class="fiber">5g serat</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition3" checked>
-                        <label for="nutrition3"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>🐟 Dinner - Grilled Salmon</h4>
-                        <p>Salmon dengan quinoa dan sayuran panggang</p>
-                        <div class="task-meta">
-                            <span class="time">19:00</span>
-                            <span class="omega3">Tinggi Omega-3</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition4">
-                        <label for="nutrition4"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🥤 Green Smoothie</h4>
-                        <p>Smoothie bayam, apel, dan jahe</p>
-                        <div class="task-meta">
-                            <span class="vitamins">Vitamin A & C</span>
-                            <span class="detox">Detox</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition5" checked>
-                        <label for="nutrition5"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🥜 Afternoon Snack</h4>
-                        <p>Mixed nuts dan buah kering</p>
-                        <div class="task-meta">
-                            <span class="healthy-fats">Lemak sehat</span>
-                            <span class="portion">30g</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition6" checked>
-                        <label for="nutrition6"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>🍓 Evening Fruit</h4>
-                        <p>Mixed berries sebagai dessert sehat</p>
-                        <div class="task-meta">
-                            <span class="antioxidant">Antioksidan</span>
-                            <span class="low-cal">Rendah kalori</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition7">
-                        <label for="nutrition7"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🥛 Protein Shake</h4>
-                        <p>Post-workout protein shake</p>
-                        <div class="task-meta">
-                            <span class="protein">25g protein</span>
-                            <span class="recovery">Recovery</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="nutrition8" checked>
-                        <label for="nutrition8"></label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Wellness Section -->
-        <div class="todo-section" data-category="wellness">
-            <div class="section-header">
-                <h3>🧘 Wellness & Mental Health</h3>
-                <span class="section-progress">3/5 completed</span>
-            </div>
-            <div class="todo-list">
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🧘‍♀️ Morning Meditation</h4>
-                        <p>Meditasi mindfulness 15 menit</p>
-                        <div class="task-meta">
-                            <span class="duration">15 menit</span>
-                            <span class="app">Headspace App</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="wellness1" checked>
-                        <label for="wellness1"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>📖 Reading Time</h4>
-                        <p>Baca buku pengembangan diri</p>
-                        <div class="task-meta">
-                            <span class="duration">30 menit</span>
-                            <span class="book">Atomic Habits</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="wellness2">
-                        <label for="wellness2"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🎵 Relaxing Music</h4>
-                        <p>Dengarkan musik klasik sambil kerja</p>
-                        <div class="task-meta">
-                            <span class="mood">Stress relief</span>
-                            <span class="focus">Produktivitas</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="wellness3" checked>
-                        <label for="wellness3"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>📝 Gratitude Journal</h4>
-                        <p>Tulis 3 hal yang disyukuri hari ini</p>
-                        <div class="task-meta">
-                            <span class="time">21:00</span>
-                            <span class="mindset">Positivity</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="wellness4">
-                        <label for="wellness4"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🛁 Self-Care Time</h4>
-                        <p>Mandi air hangat dengan essential oil</p>
-                        <div class="task-meta">
-                            <span class="relaxation">Relaksasi</span>
-                            <span class="aromatherapy">Aromaterapi</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="wellness5" checked>
-                        <label for="wellness5"></label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Habits Section -->
-        <div class="todo-section" data-category="habit">
-            <div class="section-header">
-                <h3>💧 Kebiasaan Harian</h3>
-                <span class="section-progress">4/5 completed</span>
-            </div>
-            <div class="todo-list">
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>💧 Hydration Tracking</h4>
-                        <p>Minum air putih minimal 8 gelas</p>
-                        <div class="task-meta">
-                            <span class="progress-text">8/8 gelas ✅</span>
-                            <span class="achievement">Target tercapai!</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="habit1" checked>
-                        <label for="habit1"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>😴 Sleep Schedule</h4>
-                        <p>Tidur sebelum jam 23:00</p>
-                        <div class="task-meta">
-                            <span class="target">8 jam tidur</span>
-                            <span class="quality">Kualitas tidur</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="habit2" checked>
-                        <label for="habit2"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>📱 Digital Detox</h4>
-                        <p>Tidak main HP 1 jam sebelum tidur</p>
-                        <div class="task-meta">
-                            <span class="wellness">Mental health</span>
-                            <span time="22:00-23:00">Screen free</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="habit3" checked>
-                        <label for="habit3"></label>
-                    </div>
-                </div>
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <h4>🌅 Early Morning Routine</h4>
-                        <p>Bangun jam 6 pagi setiap hari</p>
-                        <div class="task-meta">
-                            <span class="consistency">Konsistensi</span>
-                            <span class="energy">More energy</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="habit4">
-                        <label for="habit4"></label>
-                    </div>
-                </div>
-                <div class="todo-item completed">
-                    <div class="todo-content">
-                        <h4>🚗 Active Commute</h4>
-                        <p>Naik tangga instead of lift</p>
-                        <div class="task-meta">
-                            <span class="steps">Extra steps</span>
-                            <span class="cardio">Mini cardio</span>
-                        </div>
-                    </div>
-                    <div class="todo-checkbox">
-                        <input type="checkbox" id="habit5" checked>
-                        <label for="habit5"></label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Weekly Goals -->
-    <div class="weekly-goals">
-        <div class="section-header">
-            <h3>🎯 Target Mingguan</h3>
-            <span class="week-period">1 - 7 Juni 2025</span>
-        </div>
-        <div class="goals-grid">
-            <div class="goal-card">
-                <div class="goal-icon">🏃‍♂️</div>
-                <div class="goal-content">
-                    <h4>Olahraga Rutin</h4>
-                    <p>5 hari workout dalam seminggu</p>
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 80%"></div>
-                        </div>
-                        <span>4/5 hari</span>
-                    </div>
-                </div>
-            </div>
-            <div class="goal-card">
-                <div class="goal-icon">🥗</div>
-                <div class="goal-content">
-                    <h4>Nutrisi Seimbang</h4>
-                    <p>Makan sayur setiap hari</p>
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 100%"></div>
-                        </div>
-                        <span>7/7 hari ✅</span>
-                    </div>
-                </div>
-            </div>
-            <div class="goal-card">
-                <div class="goal-icon">💧</div>
-                <div class="goal-content">
-                    <h4>Hidrasi Optimal</h4>
-                    <p>8 gelas air setiap hari</p>
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 85%"></div>
-                        </div>
-                        <span>6/7 hari</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal for Adding New Task -->
-<div class="modal fade" id="addTaskModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">➕ Tambah Task Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addTaskForm">
-                    <div class="mb-3">
-                        <label class="form-label">Judul Task</label>
-                        <input type="text" class="form-control" placeholder="Masukkan judul task...">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea class="form-control" rows="3" placeholder="Deskripsi task (opsional)..."></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kategori</label>
-                        <select class="form-select">
-                            <option value="workout">🏋️‍♂️ Olahraga</option>
-                            <option value="nutrition">🥗 Nutrisi</option>
-                            <option value="wellness">🧘 Wellness</option>
-                            <option value="habit">💧 Kebiasaan</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Prioritas</label>
-                        <select class="form-select">
-                            <option value="low">Rendah</option>
-                            <option value="medium">Sedang</option>
-                            <option value="high">Tinggi</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Waktu (Opsional)</label>
-                        <input type="time" class="form-control">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary">Simpan Task</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// Filter functionality
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        // Remove active class from all buttons
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        // Add active class to clicked button
-        this.classList.add('active');
-
-        const filter = this.dataset.filter;
-        const sections = document.querySelectorAll('.todo-section');
-        const items = document.querySelectorAll('.todo-item');
-
-        if (filter === 'all') {
-            sections.forEach(section => section.style.display = 'block');
-            items.forEach(item => item.style.display = 'flex');
-        } else if (filter === 'completed') {
-            sections.forEach(section => section.style.display = 'block');
-            items.forEach(item => {
-                item.style.display = item.classList.contains('completed') ? 'flex' : 'none';
-            });
-        } else {
-            sections.forEach(section => {
-                section.style.display = section.dataset.category === filter ? 'block' : 'none';
-            });
+            `;
+            
+            return taskItem;
         }
-    });
-});
 
-// Checkbox functionality
-document.querySelectorAll('.todo-checkbox input').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const todoItem = this.closest('.todo-item');
-        if (this.checked) {
-            todoItem.classList.add('completed');
-        } else {
-            todoItem.classList.remove('completed');
+        // Toggle To-Do Completion
+        function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks();
+            }
         }
-        updateProgress();
-    });
-});
 
-// Update progress
-function updateProgress() {
-    const totalTasks = document.querySelectorAll('.todo-item').length;
-    const completedTasks = document.querySelectorAll('.todo-item.completed').length;
-    const percentage = Math.round((completedTasks / totalTasks) * 100);
+        // Delete To-Do
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            renderTasks();
+        }
 
-    document.querySelector('.progress-text').textContent = percentage + '%';
-    const circumference = 157;
-    const offset = circumference - (percentage / 100) * circumference;
-    document.querySelector('.progress-ring').style.strokeDashoffset = offset;
-}
+        // Update To-Do Counter
+        function updateTaskCounter() {
+            taskCounter.textContent = tasks.length;
+        }
 
-// Initialize progress
-updateProgress();
-</script>
-@endsection
+        // Initialize
+        renderTasks();
+        taskTitleInput.focus();
+    </script>
+</body>
+</html>

@@ -34,10 +34,7 @@
                         <a class="nav-link {{ request()->is('workout') ? 'active' : '' }}" href="{{ route('workout') }}">Workout</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('schedule') ? 'active' : '' }}" href="{{ route('schedule') }}">Jadwal</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('logout') }}">Logout</a>
+                        <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
                 </ul>
             </div>
